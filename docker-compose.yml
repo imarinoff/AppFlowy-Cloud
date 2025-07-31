@@ -11,7 +11,9 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl/certificate.crt:/etc/nginx/ssl/certificate.crt
       - ./nginx/ssl/private_key.key:/etc/nginx/ssl/private_key.key
-
+    networks:
+      - easypanel
+      - easypanel-tools
   # You do not need this if you have configured to use your own s3 file storage
   minio:
     restart: on-failure
@@ -23,7 +25,9 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
-
+    networks:
+      - easypanel
+      - easypanel-tools
   postgres:
     restart: on-failure
     image: pgvector/pgvector:pg16
@@ -39,11 +43,15 @@ services:
       retries: 12
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    networks:
+      - easypanel
+      - easypanel-tools
   redis:
     restart: on-failure
     image: redis
-
+    networks:
+      - easypanel
+      - easypanel-tools
   gotrue:
     restart: on-failure
     build:
@@ -109,7 +117,9 @@ services:
       # SAML 2.0 OAuth config
       - GOTRUE_SAML_ENABLED=${GOTRUE_SAML_ENABLED}
       - GOTRUE_SAML_PRIVATE_KEY=${GOTRUE_SAML_PRIVATE_KEY}
-
+    networks:
+      - easypanel
+      - easypanel-tools
   appflowy_cloud:
     restart: on-failure
     environment:
@@ -149,7 +159,9 @@ services:
     depends_on:
       gotrue:
         condition: service_healthy
-
+    networks:
+      - easypanel
+      - easypanel-tools
   admin_frontend:
     restart: on-failure
     build:
@@ -167,7 +179,9 @@ services:
         condition: service_healthy
       appflowy_cloud:
         condition: service_started
-
+    networks:
+      - easypanel
+      - easypanel-tools
   ai:
     restart: on-failure
     image: appflowyinc/appflowy_ai:${APPFLOWY_AI_VERSION:-latest}
@@ -179,7 +193,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
+    networks:
+      - easypanel
+      - easypanel-tools
   appflowy_worker:
     restart: on-failure
     image: appflowyinc/appflowy_worker:${APPFLOWY_WORKER_VERSION:-latest}
@@ -209,12 +225,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
+    networks:
+      - easypanel
+      - easypanel-tools
   appflowy_web:
     restart: on-failure
     image: appflowyinc/appflowy_web:${APPFLOWY_WEB_VERSION:-latest}
     depends_on:
       - appflowy_cloud
+  networks:
+      - easypanel
+      - easypanel-tools
 volumes:
   postgres_data:
   minio_data:
+networks:
+  easypanel:
+    external: true
+  easypanel-tools:
+    external: true
