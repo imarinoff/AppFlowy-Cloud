@@ -233,7 +233,7 @@ services:
     image: appflowyinc/appflowy_web:${APPFLOWY_WEB_VERSION:-latest}
     depends_on:
       - appflowy_cloud
-  networks:
+    networks:
       - easypanel
       - easypanel-tools
 volumes:
